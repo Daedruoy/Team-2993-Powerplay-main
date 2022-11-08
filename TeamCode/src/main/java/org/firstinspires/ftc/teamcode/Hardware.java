@@ -16,6 +16,7 @@ public class Hardware {
     public static final double cpi = cpr / (4 * Math.PI);
     //Motor initialization - Separate from .xml configuration and is used later on to reference the configuration, "DCMotorEx adds" extra motor conventions over "DCMotorSimple" or "DCMotor"//
     public final DcMotorEx frontRight, backRight, backLeft, frontLeft, lift, intake, turner;
+    //Need Servos//
     //Distance Sensor initialization - Separate from .xml configuration and is used later on to reference the configuration//
     //private final DistanceSensor distanceLeft, distanceRight;
     //Touch Sensor initialization - Separate from .xml configuration and is used later on to reference the configuration, "TouchSensor" outputs boolean compared to "DigitalChannel"//
