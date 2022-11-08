@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 
-@TeleOp(name = "Test Op Mode (Working3)")
+@TeleOp(name = "Test Op Mode (Working2)")
 public class OpMode1 extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
     double deadZoneSX;
@@ -29,11 +29,11 @@ public class OpMode1 extends OpMode {
         backLeft.setDirection(DcMotorEx.Direction.FORWARD);
         frontLeft = hardwareMap.get(DcMotorEx.class, "MotorC3");
         frontLeft.setDirection(DcMotorEx.Direction.FORWARD);
-        lift = hardwareMap.get(DcMotorEx.class, "MotorE1"); // only one that runs
+        lift = hardwareMap.get(DcMotorEx.class, "MotorE0"); // only one that runs
         lift.setDirection(DcMotorEx.Direction.REVERSE);
         //intake = hardwareMap.get(DcMotorEx.class, "MotorE1"); need servos
         //intake.setDirection(DcMotorEx.Direction.FORWARD);
-        lift2 = hardwareMap.get(DcMotorEx.class, "MotorE0");
+        lift2 = hardwareMap.get(DcMotorEx.class, "MotorE1");
         lift2.setDirection(DcMotorEx.Direction.FORWARD);
         turn = hardwareMap.get(DcMotorEx.class, "MotorE2");
         turn.setDirection(DcMotorEx.Direction.FORWARD);
