@@ -5,13 +5,19 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "Test Op Mode (Working2)")
+import com.qualcomm.robotcore.hardware.CRServo;
+
+@TeleOp(name = "Test Op Mode (Working3)")
 public class OpMode1 extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
     double deadZoneSX;
     double deadZoneSY;
-    private DcMotorEx frontRight = null, backRight = null, backLeft = null, frontLeft = null, lift = null,/* add back intake = null,*/ turn = null;
+    private DcMotorEx frontRight = null, backRight = null, backLeft = null, frontLeft = null, lift = null, lift2 = null,/* add back intake = null,*/ turn = null;
+    private CRServo slideServo = null;
+    private Servo clawServo = null;
+    private boolean clawClosed = false;
     @Override
     public void init() {
         telemetry.addData("Status", "Initializing");
@@ -23,14 +29,24 @@ public class OpMode1 extends OpMode {
         backLeft.setDirection(DcMotorEx.Direction.FORWARD);
         frontLeft = hardwareMap.get(DcMotorEx.class, "MotorC3");
         frontLeft.setDirection(DcMotorEx.Direction.FORWARD);
-        lift = hardwareMap.get(DcMotorEx.class, "MotorE0"); // only one that runs
+        lift = hardwareMap.get(DcMotorEx.class, "MotorE1"); // only one that runs
         lift.setDirection(DcMotorEx.Direction.REVERSE);
-        //intake = hardwareMap.get(DcMotorEx.class, "MotorE1"); we need to add this back for servos
+        //intake = hardwareMap.get(DcMotorEx.class, "MotorE1"); need servos
         //intake.setDirection(DcMotorEx.Direction.FORWARD);
-        lift = hardwareMap.get(DcMotorEx.class, "MotorE1");
-        lift.setDirection(DcMotorEx.Direction.FORWARD);
+        lift2 = hardwareMap.get(DcMotorEx.class, "MotorE0");
+        lift2.setDirection(DcMotorEx.Direction.FORWARD);
         turn = hardwareMap.get(DcMotorEx.class, "MotorE2");
         turn.setDirection(DcMotorEx.Direction.FORWARD);
+
+       // slideServo = hardwareMap.crservo.get(Servo.class, "ServoLinearSlide"); // Linear slide servo
+        slideServo = hardwareMap.crservo.get("ServoLinearSlide");
+        slideServo.setDirection(CRServo.Direction.FORWARD);
+
+        // idk if this needs to be a continuous rotation servo or not, we aren't using it as one
+        // but is the actual physical servo technically a 360 servo?
+        clawServo = hardwareMap.get(Servo.class, "ServoClaw");
+        clawServo.setDirection(Servo.Direction.FORWARD);
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
     }
@@ -50,7 +66,9 @@ public class OpMode1 extends OpMode {
         driveOp(.85);
        // intakeOp(.75);
         turnOp(1);
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        handleLinearSlide();
+        handleClaw();
+        telemetry.addData("Status", "Run Time: " + runtime);
         telemetry.update();
     }
 
@@ -85,6 +103,24 @@ public class OpMode1 extends OpMode {
         intake.setPower(v1 * speed); add back for servos
     }*/
 
+    public void handleLinearSlide ()
+    {
+        double power = 0;
+        power += gamepad1.left_bumper ? -1 : 0;
+        power += gamepad1.right_bumper ? 1 : 0;
+
+        slideServo.setPower(power * 1);
+    }
+
+    // function to toggle claw between closed and open based on when driver presses the a button
+    public void handleClaw ()
+    {
+        if (gamepad1.x) clawClosed = !clawClosed;
+
+        if (clawClosed) clawServo.setPosition(1);
+        else clawServo.setPosition(0);
+    }
+
     public void turnOp(double speed) {
         double deadZoneA;
         double deadZoneX;
@@ -117,5 +153,6 @@ public class OpMode1 extends OpMode {
         }
         final double v1 = deadZoneA + deadZoneY;
         lift.setPower(v1 * speed);
+        lift2.setPower(v1 * speed);
     }
 }
