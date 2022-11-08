@@ -15,7 +15,7 @@ public class Hardware {
     //Counts per inch of linear travel - cpi = cpr /("wheel diameter" * Math.PI //
     public static final double cpi = cpr / (4 * Math.PI);
     //Motor initialization - Separate from .xml configuration and is used later on to reference the configuration, "DCMotorEx adds" extra motor conventions over "DCMotorSimple" or "DCMotor"//
-    public final DcMotorEx frontRight, backRight, backLeft, frontLeft, lift, intake, turner;
+    public final DcMotorEx frontRight, backRight, backLeft, frontLeft, lift,/* intake,*/ turner;
     //Need Servos//
     //Distance Sensor initialization - Separate from .xml configuration and is used later on to reference the configuration//
     //private final DistanceSensor distanceLeft, distanceRight;
@@ -44,8 +44,10 @@ public class Hardware {
         frontLeft.setDirection(DcMotorEx.Direction.REVERSE);
         lift = map.get(DcMotorEx.class, "MotorE0");
         lift.setDirection(DcMotorEx.Direction.REVERSE);
-        intake = map.get(DcMotorEx.class, "MotorE1");
-        intake.setDirection(DcMotorEx.Direction.FORWARD);
+        //intake = map.get(DcMotorEx.class, "MotorE1"); // used to be intake
+      //  intake.setDirection(DcMotorEx.Direction.FORWARD); add back
+        //servos will go under intake
+      // don't need the ones after this
         turner = map.get(DcMotorEx.class, "MotorE2");
         turner.setDirection(DcMotorEx.Direction.FORWARD);
         liftTouch = map.get(TouchSensor.class, "Touch1");
@@ -118,7 +120,7 @@ public class Hardware {
     }
 
     //Intake Op//
-    public void intakeOp(double speed) {
+   /* public void intakeOp(double speed) {
         if (a) {
             deadZoneA = 1;
             deadZoneY = 0;
@@ -131,7 +133,7 @@ public class Hardware {
         }
         final double v1 = deadZoneA + deadZoneY;
         turner.setPower(v1 * speed);
-    }
+    }*/
 
     //Lift Op//
     public void liftOp(double speed) {
@@ -147,8 +149,24 @@ public class Hardware {
             resetLift();
         }
         final double v1 = deadZoneLT + deadZoneRT;
-        intake.setPower(v1 * speed);
+        //intake.setPower(v1 * speed);
     }
+
+    /*public void liftOpe(double speed) {
+        int topPos = 1600;
+        resetLift();
+        if (right_trigger > .05 && lift.getCurrentPosition() < topPos) {
+            deadZoneRT = right_trigger;
+            deadZoneLT = 0;
+        } else if (left_trigger > .05 && lift.getCurrentPosition() > 0) {
+            deadZoneLT = -left_trigger;
+            deadZoneRT = 0;
+        } else if (lift.getCurrentPosition() < 0 && lift.getCurrentPosition() > topPos) {
+            resetLift();
+        }
+        final double v1 = deadZoneLT + deadZoneRT;
+        intake.setPower(v1 * speed);
+    }*/
 
     //Autonomous Functions using Encoders (Self Explanatory)//
     public void goForward(double speed, int in) {
@@ -196,7 +214,7 @@ public class Hardware {
         backLeft.setPower(0);
         frontLeft.setPower(0);
     }
-    public void intake(double speed, int in) {
+    /*public void intake(double speed, int in) {
         intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         int target = (int) (in * cpi);
         intake.setTargetPosition(target);
@@ -204,8 +222,8 @@ public class Hardware {
         while (intake.isBusy()) {
             status = "intake";
         }
-        intake.setPower(0);
-    }
+        intake.setPower(0); add back
+    }*/
 
     public void strafeLeft(double speed, int in) {
         frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -304,14 +322,14 @@ public class Hardware {
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
-        intake.setPower(0);
+     //   intake.setPower(0);
         turner.setPower(0);
         lift.setPower(0);
         frontLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         frontRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         backRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        intake.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+      //  intake.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         turner.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
     }

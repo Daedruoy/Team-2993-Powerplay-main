@@ -11,7 +11,7 @@ public class OpMode1 extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
     double deadZoneSX;
     double deadZoneSY;
-    private DcMotorEx frontRight = null, backRight = null, backLeft = null, frontLeft = null, lift = null, intake = null, turn = null;
+    private DcMotorEx frontRight = null, backRight = null, backLeft = null, frontLeft = null, lift = null,/* add back intake = null,*/ turn = null;
     @Override
     public void init() {
         telemetry.addData("Status", "Initializing");
@@ -23,10 +23,12 @@ public class OpMode1 extends OpMode {
         backLeft.setDirection(DcMotorEx.Direction.FORWARD);
         frontLeft = hardwareMap.get(DcMotorEx.class, "MotorC3");
         frontLeft.setDirection(DcMotorEx.Direction.FORWARD);
-        lift = hardwareMap.get(DcMotorEx.class, "MotorE0");
+        lift = hardwareMap.get(DcMotorEx.class, "MotorE0"); // only one that runs
         lift.setDirection(DcMotorEx.Direction.REVERSE);
-        intake = hardwareMap.get(DcMotorEx.class, "MotorE1");
-        intake.setDirection(DcMotorEx.Direction.FORWARD);
+        //intake = hardwareMap.get(DcMotorEx.class, "MotorE1"); we need to add this back for servos
+        //intake.setDirection(DcMotorEx.Direction.FORWARD);
+        lift = hardwareMap.get(DcMotorEx.class, "MotorE1");
+        lift.setDirection(DcMotorEx.Direction.FORWARD);
         turn = hardwareMap.get(DcMotorEx.class, "MotorE2");
         turn.setDirection(DcMotorEx.Direction.FORWARD);
         telemetry.addData("Status", "Initialized");
@@ -46,7 +48,7 @@ public class OpMode1 extends OpMode {
     public void loop() {
         liftOp(.5);
         driveOp(.85);
-        intakeOp(.75);
+       // intakeOp(.75);
         turnOp(1);
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.update();
@@ -69,7 +71,7 @@ public class OpMode1 extends OpMode {
         backRight.setPower(right * driveSpeed);
     }
 
-    public void intakeOp(double speed) {
+  /*  public void intakeOp(double speed) {
         double deadZoneRT = 0;
         double deadZoneLT = 0;
         if (gamepad1.right_trigger > .05) {
@@ -80,8 +82,8 @@ public class OpMode1 extends OpMode {
             deadZoneRT = 0;
         }
         final double v1 = deadZoneLT + deadZoneRT;
-        intake.setPower(v1 * speed);
-    }
+        intake.setPower(v1 * speed); add back for servos
+    }*/
 
     public void turnOp(double speed) {
         double deadZoneA;
