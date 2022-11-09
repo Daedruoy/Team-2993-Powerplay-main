@@ -88,25 +88,43 @@ public class OpMode1 extends OpMode {
     telemetry.update();
   }
 
-  // function to do basic forward and turning, no mekanum support
+  // function to do turning and movment, supports mekanum wheels
   public void driveOp() {
-    // get input from right stick x and left stick y
-    if (Math.abs(gamepad1.right_stick_x) > .05) {
-      deadZoneSY = -gamepad1.right_stick_x;
-    } else if (Math.abs(gamepad1.left_stick_y) > .05) {
-      deadZoneSX = gamepad1.left_stick_y;
+    // set stick to 0 if it is below smal value, otherwise invert (left stick x)
+    if (Math.abs(gamepad1.left_stick_x) < 0.05) {
+      deadZoneX = 0;
     } else {
-      deadZoneSX = 0;
-      deadZoneSY = 0;
+      deadZoneX = -gamepad1.left_stick_x;
     }
 
-    //differential steering
-    final double left = deadZoneSX + deadZoneSY;
-    final double right = deadZoneSX - deadZoneSY;
-    frontLeft.setPower(left * driveSpeed);
-    backLeft.setPower(left * driveSpeed);
-    frontRight.setPower(right * driveSpeed);
-    backRight.setPower(right * driveSpeed);
+    // same as previous, but left stick y
+    if (Math.abs(gamepad1.left_stick_y) < 0.05) {
+      deadZoneY = 0;
+    } else {
+      deadZoneY = -gamepad1.left_stick_y;
+    }
+
+    // same as previous, but right stick x and don't invert
+    if (Math.abs(gamepad1.right_stick_x) < 0.05) {
+      deadZoneRotate = 0;
+    } else {
+      deadZoneRotate = gamepad1.right_stick_x;
+    }
+
+    // bunch of math for the mekanum wheels, i don't really understand the math
+    double r = Math.hypot(deadZoneX, -deadZoneY);
+    double robotAngle = Math.atan2(-deadZoneY, deadZoneX) - Math.PI / 4;
+    double rightX = deadZoneRotate / 1.25;
+    final double v1 = r * Math.cos(robotAngle) + rightX;
+    final double v2 = r * Math.sin(robotAngle) - rightX;
+    final double v3 = r * Math.sin(robotAngle) + rightX;
+    final double v4 = r * Math.cos(robotAngle) - rightX;
+
+    //set final motor powers
+    frontRight.setPower(v1 * driveSpeed);
+    frontLeft.setPower(v4 * driveSpeed);
+    backRight.setPower(v3 * driveSpeed);
+    backLeft.setPower(v2 * driveSpeed);
   }
 
   // function to handle linear slide
