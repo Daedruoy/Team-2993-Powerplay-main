@@ -82,7 +82,7 @@ public class OpMode1 extends OpMode {
     driveOp();
     // intakeOp(.75);
     // turnOp(1);
-    handleLinearSlide();
+    hanpdleLinearSlide();
     handleClaw();
     telemetry.addData("Status", "Run Time: " + runtime);
     telemetry.update();
@@ -128,7 +128,7 @@ public class OpMode1 extends OpMode {
     if (clawClosed) clawServo.setPosition(clawClosedPos);
     else clawServo.setPosition(clawOpenPos);
   }
-
+  
   // controls "turn" motor (what is this motor? it is a 7th motor and we only have 6 on the bot)
   public void turnOp(double speed) {
     double deadZoneA;
