@@ -155,4 +155,5 @@ public class OpMode1 extends OpMode {
         lift.setPower(v1 * speed);
         lift2.setPower(v1 * speed);
     }
+
 }
