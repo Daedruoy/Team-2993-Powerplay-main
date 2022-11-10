@@ -29,7 +29,7 @@ public class OpMode1 extends OpMode {
     Controls:
     left stick -- moves bot in direction of stick using mechanums
     right stick -- turns bot, only x value does anything
-    A and Y -- moves lift up and down (not sure which is which) (also a and y don't make much sense to me, can we use the triggers instead?)
+    triggers -- moves lift up and down
     bumpers -- moves linear slide motor up and down
     x -- toggles claw open / closed
   */
@@ -154,23 +154,12 @@ pp
   
   // function to handle 4 bar
   public void liftOp() {
-    double deadZoneA;
-    double deadZoneY;
-
     // get input from gamepad
-    if (gamepad1.a) {
-      deadZoneA = 1;
-      deadZoneY = 0;
-    } else if (gamepad1.y) {
-      deadZoneY = -1;
-      deadZoneA = 0;
-    } else{
-      deadZoneA = 0;
-      deadZoneY = 0;
-    }
-    // sum = using a and y kind of like 1 joystick
-    final double v1 = deadZoneA + deadZoneY;
-    lift.setPower(v1 * liftSpeed);
-    lift2.setPower(v1 * liftSpeed);
+    double deadZoneTriggers = gamepad1.right_trigger - gamepad1.left_trigger;
+    
+    if (deadZoneTriggers < 0.05) deadZoneTriggers = 0;
+
+    lift.setPower(deadZoneTriggers * liftSpeed);
+    lift2.setPower(deadZoneTriggers * liftSpeed);
   }
 }
