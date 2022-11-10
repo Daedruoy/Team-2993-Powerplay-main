@@ -24,6 +24,15 @@ public class OpMode1 extends OpMode {
   private double clawOpenPos = 0.0;
   private double driveSpeed = 0.85;
   private double liftSpeed = 0.5;
+
+  /*
+    Controls:
+    left stick -- moves bot in direction of stick using mechanums
+    right stick -- turns bot, only x value does anything
+    A and Y -- moves lift up and down (not sure which is which) (also a and y don't make much sense to me, can we use the triggers instead?)
+    bumpers -- moves linear slide motor up and down
+    x -- toggles claw open / closed
+  */
   
   @Override
   public void init() {
@@ -92,7 +101,7 @@ public class OpMode1 extends OpMode {
     } else {
       deadZoneX = -gamepad1.left_stick_x;
     }
-
+pp
     // same as previous, but left stick y
     if (Math.abs(gamepad1.left_stick_y) < 0.05) {
       deadZoneY = 0;
