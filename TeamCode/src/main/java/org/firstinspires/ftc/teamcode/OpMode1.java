@@ -13,7 +13,7 @@ public class OpMode1 extends OpMode {
   private final ElapsedTime runtime = new ElapsedTime();
   double deadZoneSX;
   double deadZoneSY;
-  private DcMotorEx frontRight = null, backRight = null, backLeft = null, frontLeft = null, lift = null, lift2 = null,/* add back intake = null,*/ turn = null;
+  private DcMotorEx frontRight = null, backRight = null, backLeft = null, frontLeft = null, lift = null, lift2 = null;
   private CRServo slideServo = null;
   private Servo clawServo = null;
   private boolean clawClosed = false;
@@ -49,10 +49,6 @@ public class OpMode1 extends OpMode {
 
     lift2 = hardwareMap.get(DcMotorEx.class, "MotorE1");
     lift2.setDirection(DcMotorEx.Direction.FORWARD);
-
-    //what is MotorE2? we only have 6 motors on the bot
-    turn = hardwareMap.get(DcMotorEx.class, "MotorE2");
-    turn.setDirection(DcMotorEx.Direction.FORWARD);
 
     // slideServo = hardwareMap.crservo.get(Servo.class, "ServoLinearSlide"); // Linear slide servo
     slideServo = hardwareMap.crservo.get("ServoLinearSlide");
@@ -147,24 +143,6 @@ public class OpMode1 extends OpMode {
     else clawServo.setPosition(clawOpenPos);
   }
   
-  // controls "turn" motor (what is this motor? it is a 7th motor and we only have 6 on the bot)
-  public void turnOp(double speed) {
-    double deadZoneA;
-    double deadZoneX;
-    if (gamepad1.b) {
-      deadZoneA = 1;
-      deadZoneX = 0;
-    } else if (gamepad1.x) {
-      deadZoneX = -1;
-      deadZoneA = 0;
-    } else {
-      deadZoneA = 0;
-      deadZoneX = 0;
-    }
-    final double v1 = deadZoneA + deadZoneX;
-    turn.setPower(v1 * speed);
-  }
-
   // function to handle 4 bar
   public void liftOp() {
     double deadZoneA;
