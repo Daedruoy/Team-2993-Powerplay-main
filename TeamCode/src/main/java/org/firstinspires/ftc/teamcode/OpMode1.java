@@ -6,154 +6,160 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.Servo;
-
 import com.qualcomm.robotcore.hardware.CRServo;
 
 @TeleOp(name = "Test Op Mode (Working2)")
 public class OpMode1 extends OpMode {
-    private final ElapsedTime runtime = new ElapsedTime();
-    double deadZoneSX;
-    double deadZoneSY;
-    private DcMotorEx frontRight = null, backRight = null, backLeft = null, frontLeft = null, lift = null, lift2 = null,/* add back intake = null,*/ turn = null;
-    private CRServo slideServo = null;
-    private Servo clawServo = null;
-    private boolean clawClosed = false;
-    @Override
-    public void init() {
-        telemetry.addData("Status", "Initializing");
-        frontRight = hardwareMap.get(DcMotorEx.class, "MotorC0");
-        frontRight.setDirection(DcMotorEx.Direction.REVERSE);
-        backRight = hardwareMap.get(DcMotorEx.class, "MotorC1");
-        backRight.setDirection(DcMotorEx.Direction.REVERSE);
-        backLeft = hardwareMap.get(DcMotorEx.class, "MotorC2");
-        backLeft.setDirection(DcMotorEx.Direction.FORWARD);
-        frontLeft = hardwareMap.get(DcMotorEx.class, "MotorC3");
-        frontLeft.setDirection(DcMotorEx.Direction.FORWARD);
-        lift = hardwareMap.get(DcMotorEx.class, "MotorE0"); // only one that runs
-        lift.setDirection(DcMotorEx.Direction.REVERSE);
-        //intake = hardwareMap.get(DcMotorEx.class, "MotorE1"); need servos
-        //intake.setDirection(DcMotorEx.Direction.FORWARD);
-        lift2 = hardwareMap.get(DcMotorEx.class, "MotorE1");
-        lift2.setDirection(DcMotorEx.Direction.FORWARD);
-        turn = hardwareMap.get(DcMotorEx.class, "MotorE2");
-        turn.setDirection(DcMotorEx.Direction.FORWARD);
+  private final ElapsedTime runtime = new ElapsedTime();
+  double deadZoneSX;
+  double deadZoneSY;
+  private DcMotorEx frontRight = null, backRight = null, backLeft = null, frontLeft = null, lift = null, lift2 = null;
+  private CRServo slideServo = null;
+  private Servo clawServo = null;
+  private boolean clawClosed = false;
 
-       // slideServo = hardwareMap.crservo.get(Servo.class, "ServoLinearSlide"); // Linear slide servo
-        slideServo = hardwareMap.crservo.get("ServoLinearSlide");
-        slideServo.setDirection(CRServo.Direction.FORWARD);
+  // config variables, adjust these to change various things about robot
+  private double slideServoSpeed = 1.0;
+  private double clawClosedPos = 1.0;
+  private double clawOpenPos = 0.0;
+  private double driveSpeed = 0.85;
+  private double liftSpeed = 0.5;
 
-        // idk if this needs to be a continuous rotation servo or not, we aren't using it as one
-        // but is the actual physical servo technically a 360 servo?
-        clawServo = hardwareMap.get(Servo.class, "ServoClaw");
-        clawServo.setDirection(Servo.Direction.FORWARD);
+  /*
+    Controls:
+    left stick -- moves bot in direction of stick using mechanums
+    right stick -- turns bot, only x value does anything
+    triggers -- moves lift up and down
+    bumpers -- moves linear slide motor up and down
+    x -- toggles claw open / closed
+  */
+  
+  @Override
+  public void init() {
+    telemetry.addData("Status", "Initializing");
+    
+    frontRight = hardwareMap.get(DcMotorEx.class, "MotorC0");
+    frontRight.setDirection(DcMotorEx.Direction.REVERSE);
 
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+    backRight = hardwareMap.get(DcMotorEx.class, "MotorC1");
+    backRight.setDirection(DcMotorEx.Direction.REVERSE);
+
+    backLeft = hardwareMap.get(DcMotorEx.class, "MotorC2");
+    backLeft.setDirection(DcMotorEx.Direction.FORWARD);
+
+    frontLeft = hardwareMap.get(DcMotorEx.class, "MotorC3");
+    frontLeft.setDirection(DcMotorEx.Direction.FORWARD);
+
+    lift = hardwareMap.get(DcMotorEx.class, "MotorE0"); // only one that runs
+    lift.setDirection(DcMotorEx.Direction.REVERSE);
+
+    //intake = hardwareMap.get(DcMotorEx.class, "MotorE1"); need servos
+    //intake.setDirection(DcMotorEx.Direction.FORWARD);
+
+    lift2 = hardwareMap.get(DcMotorEx.class, "MotorE1");
+    lift2.setDirection(DcMotorEx.Direction.FORWARD);
+
+    // slideServo = hardwareMap.crservo.get(Servo.class, "ServoLinearSlide"); // Linear slide servo
+    slideServo = hardwareMap.crservo.get("ServoLinearSlide");
+    slideServo.setDirection(CRServo.Direction.FORWARD);
+
+    // idk if this needs to be a continuous rotation servo or not, we aren't using it as one
+    // but is the actual physical servo technically a 360 servo?
+    clawServo = hardwareMap.get(Servo.class, "ServoClaw");
+    clawServo.setDirection(Servo.Direction.FORWARD);
+
+    telemetry.addData("Status", "Initialized");
+    telemetry.update();
+  }
+
+  @Override
+  public void init_loop() {
+  }
+
+  @Onverride
+  public void start() {
+    runtime.reset();
+  }
+
+  @Override
+  public void loop() {
+    liftOp();
+    driveOp();
+    // intakeOp(.75);
+    // turnOp(1);
+    hanpdleLinearSlide();
+    handleClaw();
+    telemetry.addData("Status", "Run Time: " + runtime);
+    telemetry.update();
+  }
+
+  // function to do turning and movment, supports mekanum wheels
+  public void driveOp() {
+    // set stick to 0 if it is below smal value, otherwise invert (left stick x)
+    if (Math.abs(gamepad1.left_stick_x) < 0.05) {
+      deadZoneX = 0;
+    } else {
+      deadZoneX = -gamepad1.left_stick_x;
+    }
+pp
+    // same as previous, but left stick y
+    if (Math.abs(gamepad1.left_stick_y) < 0.05) {
+      deadZoneY = 0;
+    } else {
+      deadZoneY = -gamepad1.left_stick_y;
     }
 
-    @Override
-    public void init_loop() {
+    // same as previous, but right stick x and don't invert
+    if (Math.abs(gamepad1.right_stick_x) < 0.05) {
+      deadZoneRotate = 0;
+    } else {
+      deadZoneRotate = gamepad1.right_stick_x;
     }
 
-    @Override
-    public void start() {
-        runtime.reset();
-    }
+    // bunch of math for the mekanum wheels, i don't really understand the math
+    double r = Math.hypot(deadZoneX, -deadZoneY);
+    double robotAngle = Math.atan2(-deadZoneY, deadZoneX) - Math.PI / 4;
+    double rightX = deadZoneRotate / 1.25;
+    final double v1 = r * Math.cos(robotAngle) + rightX;
+    final double v2 = r * Math.sin(robotAngle) - rightX;
+    final double v3 = r * Math.sin(robotAngle) + rightX;
+    final double v4 = r * Math.cos(robotAngle) - rightX;
 
-    @Override
-    public void loop() {
-        liftOp(.5);
-        driveOp(.85);
-       // intakeOp(.75);
-        turnOp(1);
-        handleLinearSlide();
-        handleClaw();
-        telemetry.addData("Status", "Run Time: " + runtime);
-        telemetry.update();
-    }
+    //set final motor powers
+    frontRight.setPower(v1 * driveSpeed);
+    frontLeft.setPower(v4 * driveSpeed);
+    backRight.setPower(v3 * driveSpeed);
+    backLeft.setPower(v2 * driveSpeed);
+  }
 
-    public void driveOp(double driveSpeed) {
-        if (Math.abs(gamepad1.right_stick_x) > .05) {
-            deadZoneSY = -gamepad1.right_stick_x;
-        } else if (Math.abs(gamepad1.left_stick_y) > .05) {
-            deadZoneSX = gamepad1.left_stick_y;
-        } else {
-            deadZoneSX = 0;
-            deadZoneSY = 0;
-        }
-        final double left = deadZoneSX + deadZoneSY;
-        final double right = deadZoneSX - deadZoneSY;
-        frontLeft.setPower(left * driveSpeed);
-        backLeft.setPower(left * driveSpeed);
-        frontRight.setPower(right * driveSpeed);
-        backRight.setPower(right * driveSpeed);
-    }
+  // function to handle linear slide
+  public void handleLinearSlide ()
+  {
+    //get inputs from bumpers
+    double power = 0;
+    power += gamepad1.left_bumper ? -1 : 0;
+    power += gamepad1.right_bumper ? 1 : 0;
 
-  /*  public void intakeOp(double speed) {
-        double deadZoneRT = 0;
-        double deadZoneLT = 0;
-        if (gamepad1.right_trigger > .05) {
-            deadZoneRT = gamepad1.right_trigger;
-            deadZoneLT = 0;
-        } else if (gamepad1.left_trigger > .05) {
-            deadZoneLT = -gamepad1.left_trigger;
-            deadZoneRT = 0;
-        }
-        final double v1 = deadZoneLT + deadZoneRT;
-        intake.setPower(v1 * speed); add back for servos
-    }*/
+    slideServo.setPower(power * slideServoSpeed); // set servo power
+  }
 
-    public void handleLinearSlide ()
-    {
-        double power = 0;
-        power += gamepad1.left_bumper ? -1 : 0;
-        power += gamepad1.right_bumper ? 1 : 0;
+  // function to toggle claw between closed and open based on when driver presses the a button
+  public void handleClaw ()
+  {
+    if (gamepad1.x) clawClosed = !clawClosed;
 
-        slideServo.setPower(power * 1);
-    }
+    if (clawClosed) clawServo.setPosition(clawClosedPos);
+    else clawServo.setPosition(clawOpenPos);
+  }
+  
+  // function to handle 4 bar
+  public void liftOp() {
+    // get input from gamepad
+    double deadZoneTriggers = gamepad1.right_trigger - gamepad1.left_trigger;
+    
+    if (deadZoneTriggers < 0.05) deadZoneTriggers = 0;
 
-    // function to toggle claw between closed and open based on when driver presses the a button
-    public void handleClaw ()
-    {
-        if (gamepad1.x) clawClosed = !clawClosed;
-
-        if (clawClosed) clawServo.setPosition(1);
-        else clawServo.setPosition(0);
-    }
-
-    public void turnOp(double speed) {
-        double deadZoneA;
-        double deadZoneX;
-        if (gamepad1.b) {
-            deadZoneA = 1;
-            deadZoneX = 0;
-        } else if (gamepad1.x) {
-            deadZoneX = -1;
-            deadZoneA = 0;
-        } else {
-            deadZoneA = 0;
-            deadZoneX = 0;
-        }
-        final double v1 = deadZoneA + deadZoneX;
-        turn.setPower(v1 * speed);
-    }
-
-    public void liftOp(double speed) {
-        double deadZoneA;
-        double deadZoneY;
-        if (gamepad1.a) {
-            deadZoneA = 1;
-            deadZoneY = 0;
-        } else if (gamepad1.y) {
-            deadZoneY = -1;
-            deadZoneA = 0;
-        } else{
-            deadZoneA = 0;
-            deadZoneY = 0;
-        }
-        final double v1 = deadZoneA + deadZoneY;
-        lift.setPower(v1 * speed);
-        lift2.setPower(v1 * speed);
-    }
-
+    lift.setPower(deadZoneTriggers * liftSpeed);
+    lift2.setPower(deadZoneTriggers * liftSpeed);
+  }
 }
