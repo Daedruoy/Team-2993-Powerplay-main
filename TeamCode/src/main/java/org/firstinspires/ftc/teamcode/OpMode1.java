@@ -76,7 +76,7 @@ public class OpMode1 extends OpMode {
   public void init_loop() {
   }
 
-  @Onverride
+  @Override
   public void start() {
     runtime.reset();
   }
@@ -87,7 +87,7 @@ public class OpMode1 extends OpMode {
     driveOp();
     // intakeOp(.75);
     // turnOp(1);
-    hanpdleLinearSlide();
+    handleLinearSlide();
     handleClaw();
     telemetry.addData("Status", "Run Time: " + runtime);
     telemetry.update();
@@ -95,42 +95,36 @@ public class OpMode1 extends OpMode {
 
   // function to do turning and movment, supports mekanum wheels
   public void driveOp() {
-    // set stick to 0 if it is below smal value, otherwise invert (left stick x)
-    if (Math.abs(gamepad1.left_stick_x) < 0.05) {
-      deadZoneX = 0;
+    double deadZoneDriveX = .5, deadZoneDriveY = .5, deadZoneDriveRotate = .5;
+    if (Math.abs( gamepad1.left_stick_x) < 0.05) {
+      deadZoneDriveX = 0;
     } else {
-      deadZoneX = -gamepad1.left_stick_x;
+      deadZoneDriveX = -gamepad1.left_stick_x;
     }
-pp
-    // same as previous, but left stick y
     if (Math.abs(gamepad1.left_stick_y) < 0.05) {
-      deadZoneY = 0;
+      deadZoneDriveY = 0;
     } else {
-      deadZoneY = -gamepad1.left_stick_y;
+      deadZoneDriveY = gamepad1.left_stick_y;
     }
-
-    // same as previous, but right stick x and don't invert
     if (Math.abs(gamepad1.right_stick_x) < 0.05) {
-      deadZoneRotate = 0;
+      deadZoneDriveRotate = 0;
     } else {
-      deadZoneRotate = gamepad1.right_stick_x;
+      deadZoneDriveRotate = gamepad1.right_stick_x;
     }
-
-    // bunch of math for the mekanum wheels, i don't really understand the math
-    double r = Math.hypot(deadZoneX, -deadZoneY);
-    double robotAngle = Math.atan2(-deadZoneY, deadZoneX) - Math.PI / 4;
-    double rightX = deadZoneRotate / 1.25;
+    double r = Math.hypot(deadZoneDriveX, -deadZoneDriveY);
+    double robotAngle = Math.atan2(-deadZoneDriveY, deadZoneDriveX) - Math.PI / 4;
+    double rightX = deadZoneDriveRotate / 1.25;
     final double v1 = r * Math.cos(robotAngle) + rightX;
     final double v2 = r * Math.sin(robotAngle) - rightX;
     final double v3 = r * Math.sin(robotAngle) + rightX;
     final double v4 = r * Math.cos(robotAngle) - rightX;
-
-    //set final motor powers
     frontRight.setPower(v1 * driveSpeed);
-    frontLeft.setPower(v4 * driveSpeed);
+    frontLeft.setPower(v2 * driveSpeed);
     backRight.setPower(v3 * driveSpeed);
-    backLeft.setPower(v2 * driveSpeed);
+      backLeft.setPower(v4 * driveSpeed);
   }
+
+
 
   // function to handle linear slide
   public void handleLinearSlide ()
